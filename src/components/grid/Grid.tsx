@@ -15,14 +15,11 @@ import { useEffect, useState } from 'react'
 type GridProps<T> = {
   data: T[]
   columns: ColumnDef<T, any>[]
-  onSelectionChange?: (rows: T[]) => void;
+  onSelectionChange?: (rows: T[]) => void
+  dirtyMap?: Record<string, boolean> // 변경된 행 표시
 }
 
-export function Grid<T>({
-  data,
-  columns,
-  onSelectionChange,
-}: GridProps<T>) {
+export function Grid<T>({ data, columns, onSelectionChange, dirtyMap }: GridProps<T>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
@@ -35,61 +32,62 @@ export function Grid<T>({
     enableRowSelection: true,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getRowId: (row: any) => row._rowKey, // 🔹 row 고유 ID
+    getRowId: (row: any) => row._rowKey,
   })
 
-  // 🔹 선택 변경 시 부모로 전달
   useEffect(() => {
     if (!onSelectionChange) return
-
-    const selectedRows = table
-      .getSelectedRowModel()
-      .rows
-      .map(r => r.original)
-
+    const selectedRows = table.getSelectedRowModel().rows.map(r => r.original)
     onSelectionChange(selectedRows)
   }, [rowSelection])
 
-  
-  return (
-    <table>
-      <thead>
-        {table.getHeaderGroups().map(hg => (
-          <tr key={hg.id}>
-            {hg.headers.map(header => (
-              <th
-                key={header.id}
-                onClick={header.column.getToggleSortingHandler()}
-                style={{ cursor: 'pointer' }}
-              >
-                {flexRender(
-                  header.column.columnDef.header,
-                  header.getContext()
-                )}
-                {{
-                  asc: ' 🔼',
-                  desc: ' 🔽',
-                }[header.column.getIsSorted() as string] ?? null}
-              </th>
-            ))}
-          </tr>
-        ))}
-      </thead>
+ return (
+    <div className="overflow-x-auto border rounded-lg">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          {table.getHeaderGroups().map(hg => (
+            <tr key={hg.id}>
+              {hg.headers.map(header => (
+                <th
+                  key={header.id}
+                  onClick={header.column.getToggleSortingHandler()}
+                  className="px-4 py-2 text-left text-sm font-medium text-gray-700 cursor-pointer select-none"
+                >
+                  <div className="flex items-center space-x-1">
+                    <span>{flexRender(header.column.columnDef.header, header.getContext())}</span>
+                    {{
+                      asc: '🔼',
+                      desc: '🔽',
+                    }[header.column.getIsSorted() as string] ?? null}
+                  </div>
+                </th>
+              ))}
+            </tr>
+          ))}
+        </thead>
 
-      <tbody>
-        {table.getRowModel().rows.map(row => (
-          <tr key={row.id}>
-            {row.getVisibleCells().map(cell => (
-              <td key={cell.id}>
-                {flexRender(
-                  cell.column.columnDef.cell,
-                  cell.getContext()
-                )}
-              </td>
-            ))}
-          </tr>
-        ))}
-      </tbody>
-    </table>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {table.getRowModel().rows.map(row => {
+            const isDirty = dirtyMap?.[row.id]
+            const isSelected = rowSelection[row.id]
+
+            return (
+              <tr
+                key={row.id}
+                className={`transition-colors ${
+                  isDirty ? 'bg-yellow-50' : ''
+                } hover:bg-gray-100 ${isSelected ? 'bg-blue-50' : ''}`}
+              >
+                {row.getVisibleCells().map(cell => (
+                  <td key={cell.id} className="px-4 py-2 text-sm text-gray-700">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
   )
 }

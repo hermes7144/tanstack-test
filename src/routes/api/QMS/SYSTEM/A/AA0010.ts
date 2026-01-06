@@ -1,7 +1,7 @@
 // src/routes/api/QMS/SYSTEM/A/AA0010.ts
-import { createFileRoute } from '@tanstack/react-router'
-import { createProcedurePostHandler } from '../../../../../server/procedure/createProcedureRoute'
+import { createProcedurePostHandler } from '@/server/procedure/createProcedureRoute';
 import { ProcedureMap } from '@/server/procedure/types';
+import { createFileRoute } from '@tanstack/react-router'
 
 const procedureMap: ProcedureMap = {
   search: { sp: 'uwindb1.spa_aa0010_inquiry' },

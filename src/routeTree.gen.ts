@@ -17,6 +17,7 @@ import { Route as DemoStartSsrIndexRouteImport } from './routes/demo/start.ssr.i
 import { Route as DemoStartSsrSpaModeRouteImport } from './routes/demo/start.ssr.spa-mode'
 import { Route as DemoStartSsrFullSsrRouteImport } from './routes/demo/start.ssr.full-ssr'
 import { Route as DemoStartSsrDataOnlyRouteImport } from './routes/demo/start.ssr.data-only'
+import { Route as ApiQMSSYSTEMAAA0010RouteImport } from './routes/api/QMS/SYSTEM/A/AA0010'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -58,6 +59,11 @@ const DemoStartSsrDataOnlyRoute = DemoStartSsrDataOnlyRouteImport.update({
   path: '/demo/start/ssr/data-only',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiQMSSYSTEMAAA0010Route = ApiQMSSYSTEMAAA0010RouteImport.update({
+  id: '/api/QMS/SYSTEM/A/AA0010',
+  path: '/api/QMS/SYSTEM/A/AA0010',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
   '/demo/start/ssr': typeof DemoStartSsrIndexRoute
+  '/api/QMS/SYSTEM/A/AA0010': typeof ApiQMSSYSTEMAAA0010Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByTo {
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
   '/demo/start/ssr': typeof DemoStartSsrIndexRoute
+  '/api/QMS/SYSTEM/A/AA0010': typeof ApiQMSSYSTEMAAA0010Route
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
   '/demo/start/ssr/': typeof DemoStartSsrIndexRoute
+  '/api/QMS/SYSTEM/A/AA0010': typeof ApiQMSSYSTEMAAA0010Route
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
     | '/demo/start/ssr'
+    | '/api/QMS/SYSTEM/A/AA0010'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
     | '/demo/start/ssr'
+    | '/api/QMS/SYSTEM/A/AA0010'
   id:
     | '__root__'
     | '/'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
     | '/demo/start/ssr/'
+    | '/api/QMS/SYSTEM/A/AA0010'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,6 +144,7 @@ export interface RootRouteChildren {
   DemoStartSsrFullSsrRoute: typeof DemoStartSsrFullSsrRoute
   DemoStartSsrSpaModeRoute: typeof DemoStartSsrSpaModeRoute
   DemoStartSsrIndexRoute: typeof DemoStartSsrIndexRoute
+  ApiQMSSYSTEMAAA0010Route: typeof ApiQMSSYSTEMAAA0010Route
 }
 
 declare module '@tanstack/react-router' {
@@ -192,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoStartSsrDataOnlyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/QMS/SYSTEM/A/AA0010': {
+      id: '/api/QMS/SYSTEM/A/AA0010'
+      path: '/api/QMS/SYSTEM/A/AA0010'
+      fullPath: '/api/QMS/SYSTEM/A/AA0010'
+      preLoaderRoute: typeof ApiQMSSYSTEMAAA0010RouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -204,6 +224,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoStartSsrFullSsrRoute: DemoStartSsrFullSsrRoute,
   DemoStartSsrSpaModeRoute: DemoStartSsrSpaModeRoute,
   DemoStartSsrIndexRoute: DemoStartSsrIndexRoute,
+  ApiQMSSYSTEMAAA0010Route: ApiQMSSYSTEMAAA0010Route,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

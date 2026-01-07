@@ -11,15 +11,16 @@ import {
   type RowSelectionState,
 } from '@tanstack/react-table'
 import { useEffect, useState } from 'react'
+import { RowStatus } from '@/hooks/useTanstackBatch' // Adjust import path as needed
 
 type GridProps<T> = {
   data: T[]
   columns: ColumnDef<T, any>[]
   onSelectionChange?: (rows: T[]) => void
-  dirtyMap?: Record<string, boolean> // 변경된 행 표시
+  rowStatus?: Record<string, RowStatus>
 }
 
-export function Grid<T>({ data, columns, onSelectionChange, dirtyMap }: GridProps<T>) {
+export function Grid<T>({ data, columns, onSelectionChange, rowStatus }: GridProps<T>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
@@ -35,13 +36,14 @@ export function Grid<T>({ data, columns, onSelectionChange, dirtyMap }: GridProp
     getRowId: (row: any) => row._rowKey,
   })
 
+  // 선택 변경 시 부모에게 알림
   useEffect(() => {
     if (!onSelectionChange) return
     const selectedRows = table.getSelectedRowModel().rows.map(r => r.original)
     onSelectionChange(selectedRows)
-  }, [rowSelection])
+  }, [rowSelection]) // data가 바뀌면 selection이 초기화되거나 유지되어야 하는데, 여기선 선택 상태 변경만 감지
 
- return (
+  return (
     <div className="overflow-x-auto border rounded-lg">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
@@ -68,15 +70,22 @@ export function Grid<T>({ data, columns, onSelectionChange, dirtyMap }: GridProp
 
         <tbody className="bg-white divide-y divide-gray-200">
           {table.getRowModel().rows.map(row => {
-            const isDirty = dirtyMap?.[row.id]
+            const status = rowStatus?.[row.id]
             const isSelected = rowSelection[row.id]
+
+            // 상태별 스타일 지정
+            let rowStyle = ''
+            if (status === 'CREATED') rowStyle = 'bg-green-50'
+            else if (status === 'MODIFIED') rowStyle = 'bg-yellow-50'
+            else if (status === 'DELETED') rowStyle = 'bg-red-50 text-gray-400 line-through'
+
+            // 선택된 행은 약간 더 진하게 (선택+상태 조합도 고려 가능)
+            if (isSelected) rowStyle += ' bg-blue-50/50'
 
             return (
               <tr
                 key={row.id}
-                className={`transition-colors ${
-                  isDirty ? 'bg-yellow-50' : ''
-                } hover:bg-gray-100 ${isSelected ? 'bg-blue-50' : ''}`}
+                className={`transition-colors hover:bg-gray-100 ${rowStyle}`}
               >
                 {row.getVisibleCells().map(cell => (
                   <td key={cell.id} className="px-4 py-2 text-sm text-gray-700">

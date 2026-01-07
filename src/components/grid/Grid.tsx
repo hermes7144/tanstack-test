@@ -9,39 +9,41 @@ import {
   type ColumnDef,
   type SortingState,
   type RowSelectionState,
+  Updater,
 } from '@tanstack/react-table'
-import { useEffect, useState } from 'react'
-import { RowStatus } from '@/hooks/useTanstackBatch' // Adjust import path as needed
+import { useState } from 'react'
+import { BatchRow } from '@/hooks/useTanstackBatch'
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
 
 type GridProps<T> = {
-  data: T[]
-  columns: ColumnDef<T, any>[]
-  onSelectionChange?: (rows: T[]) => void
-  rowStatus?: Record<string, RowStatus>
+  data: BatchRow<T>[]
+  columns: ColumnDef<BatchRow<T>, any>[]
+  rowSelection: RowSelectionState
+  onRowSelectionChange: (updater: Updater<RowSelectionState>) => void
 }
 
-export function Grid<T>({ data, columns, onSelectionChange, rowStatus }: GridProps<T>) {
+export function Grid<T>({
+  data,
+  columns,
+  rowSelection,
+  onRowSelectionChange
+}: GridProps<T>) {
   const [sorting, setSorting] = useState<SortingState>([])
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
   const table = useReactTable({
     data,
     columns,
+    // Controlled Mode: state를 props로 주입
     state: { sorting, rowSelection },
     onSortingChange: setSorting,
-    onRowSelectionChange: setRowSelection,
+    onRowSelectionChange: onRowSelectionChange, // Hook의 setter를 바로 연결
     enableRowSelection: true,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getRowId: (row: any) => row._rowKey,
   })
 
-  // 선택 변경 시 부모에게 알림
-  useEffect(() => {
-    if (!onSelectionChange) return
-    const selectedRows = table.getSelectedRowModel().rows.map(r => r.original)
-    onSelectionChange(selectedRows)
-  }, [rowSelection]) // data가 바뀌면 selection이 초기화되거나 유지되어야 하는데, 여기선 선택 상태 변경만 감지
+  // useEffect 동기화 로직 제거됨 (이제 Props로 직접 제어)
 
   return (
     <div className="overflow-x-auto border rounded-lg">
@@ -49,29 +51,37 @@ export function Grid<T>({ data, columns, onSelectionChange, rowStatus }: GridPro
         <thead className="bg-gray-50">
           {table.getHeaderGroups().map(hg => (
             <tr key={hg.id}>
-              {hg.headers.map(header => (
-                <th
-                  key={header.id}
-                  onClick={header.column.getToggleSortingHandler()}
-                  className="px-4 py-2 text-left text-sm font-medium text-gray-700 cursor-pointer select-none"
-                >
-                  <div className="flex items-center space-x-1">
-                    <span>{flexRender(header.column.columnDef.header, header.getContext())}</span>
-                    {{
-                      asc: '🔼',
-                      desc: '🔽',
-                    }[header.column.getIsSorted() as string] ?? null}
-                  </div>
-                </th>
-              ))}
+              {hg.headers.map(header => {
+                const isSorted = header.column.getIsSorted()
+                return (
+                  <th
+                    key={header.id}
+                    onClick={header.column.getToggleSortingHandler()}
+                    className="px-4 py-2 text-left text-sm font-medium text-gray-700 cursor-pointer select-none group hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <span>{flexRender(header.column.columnDef.header, header.getContext())}</span>
+                      <span className="text-gray-400">
+                        {isSorted === 'asc' ? (
+                          <ArrowUp className="w-4 h-4 text-gray-900" />
+                        ) : isSorted === 'desc' ? (
+                          <ArrowDown className="w-4 h-4 text-gray-900" />
+                        ) : (
+                          <ArrowUpDown className="w-4 h-4 opacity-0 group-hover:opacity-50 transition-opacity" />
+                        )}
+                      </span>
+                    </div>
+                  </th>
+                )
+              })}
             </tr>
           ))}
         </thead>
 
         <tbody className="bg-white divide-y divide-gray-200">
           {table.getRowModel().rows.map(row => {
-            const status = rowStatus?.[row.id]
-            const isSelected = rowSelection[row.id]
+            const status = row.original._status
+            const isSelected = row.getIsSelected() // table 인스턴스에서 바로 확인
 
             // 상태별 스타일 지정
             let rowStyle = ''
@@ -79,7 +89,7 @@ export function Grid<T>({ data, columns, onSelectionChange, rowStatus }: GridPro
             else if (status === 'MODIFIED') rowStyle = 'bg-yellow-50'
             else if (status === 'DELETED') rowStyle = 'bg-red-50 text-gray-400 line-through'
 
-            // 선택된 행은 약간 더 진하게 (선택+상태 조합도 고려 가능)
+            // 선택된 행 등각 (선택+상태 조합)
             if (isSelected) rowStyle += ' bg-blue-50/50'
 
             return (
